@@ -1,0 +1,1427 @@
+ <!DOCTYPE html>
+ <html>
+ 	<head>
+		<meta charset="utf-8">
+		<title>Coördinaten leren</title>
+		<link rel="stylesheet" type="text/css" href="draw.css">
+		<meta name="viewport" 
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	</head>
+	<body onload = "draw()">
+		<div id="overlay" >
+			<div class="vertical-center">
+				
+				<form enctype="multipart/form-data">
+					<label for="upload">File:</label>
+					<input id="upload" type=file  name="files[]" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" >
+				</form>
+				<div id="sheetSelectorDiv">
+					Parts:
+				</div>
+				<div id="colorSelectorDiv">
+					Colour:
+					<select id="colors" onchange="clearScore();newColor()">
+						
+					</select>
+				</div>
+				<div id="showColorsDiv">
+					<input type="checkbox" id="isFemale" name="isFemale" onchange="draw()" >
+					<label for="isFemale">Female</label></br>
+					<input type="checkbox" id="showSelf" name="showSelf" onchange="draw()" checked>
+					<label for="showSelf">Show yourself</label></br>
+					<input type="checkbox" id="showPrev" name="showPrev" onchange="draw(); togleShowPrevCol()" >
+					<label for="showPrev">Show previous</label></br>
+					<input type="checkbox" id="showPrevCol" name="showPrevcol" onchange="draw()" >
+					<label for="showPrevCol" id="showPrevColLabel" >Show previous colour</label></br>	
+					<input type="checkbox" id="showOthers" name="showOthers" onchange="draw(); togleShowOthersDirCol()" checked>
+					<label for="showOthers">Show others</label></br>
+					<input type="checkbox" id="showCol" name="showCol" onchange="draw()" checked>
+					<label for="showCol" id="showColLabel">Show Colors</label></br>
+					<input type="checkbox" id="showOthersDir" name="showOthersDir" onchange="draw()" checked>
+					<label for="showOthersDir" id="showOthersDirLabel">Only show others in sight</label></br>					
+				</div>
+				<span id="close" onClick="helpOn()">
+					Help
+				</span>
+				<span id="close" onClick="off()">
+					Close
+				</span>
+			</div>
+		</div>
+		<div id="overlayHelp" style= "display:none">
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat is dit?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>Als docent moet je doen aan "deskundigheidsbevordering": ik (Jeroen) moet af en toe een beetje programmeren zodat ik weet wat ik die koters aan het leren ben. Ook wilde ik kijken of het voor mijn leerlingen mogelijk was om in javascript met excel data aan de slag te gaan (spoiler alert: niet echt). Tot slot is programmeren voor mij ook een soort van doodelen dus heb ik dit projectje gebruikt om wat treinreizen en vergaderingen op te leuken. Het resultaat is een website waarop je de coordinaten van een formatiedans kunt leren.
+					</p>
+					<p>Het programma zit zo in elkaar dat je op je eigen positie moet klikken. Doe je dit goed dan gaat het programma naar de volgende vloer en kun je het nog een keer doen. Heb je het fout dan komt er een kruisje te staan. Bovenin kun je je score zien: alles correct zonder errors: jij bent echt stoer: lolly verdiend! Je kan altijd terug (dan heb je een groen randje op de plekken waar je het goed hebt gedaan, daar mag je trots op zijn!)
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Ik heb een feature-request / ik heb een fout gevonden, wat nu?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p> Kun je zelf coden? Dan vooral lekker zelf doen, ik heb de javascript in de html file erbij gezet, 1 dependency voor het uitlezen van een zip file. De CSS staat wel netjes in een apparte file. Zoals altijd ben ik dit project begonnen met netjes te coden zodat mijn leerlingen het ook zouden kunnen lezen maar uiteidelijk ging dat idee toch (zoals zo vaak) overboord, mocht je er een keer doorheen willen lopen dan hoor ik (Jeroen) het graag.
+						Kun je niet zelf coden : vraag het. Wordt het daarna snel opgelost, misschien...
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat doet de knop settings?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p> Als je vergeten bent om de settings goed te zetten bij het opstarten, te stom was om ze goed te zetten of zo goed was dat je het wat moeilijker voor zezelf wil maken kun je de settings door op deze knop te drukken nog een keer aanpassen.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat zijn |&lt;, &lt;&lt;, &lt;, &gt;,&gt;&gt; en &gt;|?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p> Dat zijn knoppen om mee van vloer te wisselen: |&lt; gaat naar de eerste vloer, &lt;&lt; naar de eerste vloer van de vorige dans, &lt; gaat naar de vorige vloer. Voor die andere, lijkt me duidelijk.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat is -?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p> Daar zou de dans moeten staan die je nu aan het oefenen bent, waarschijnlijk heb je geen file geselecteerd.</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat betekend correct: 'x' errors:'y' claps:'z'?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p> Dit wordt wat wiskundig, maar je hebt y fouten gemaakt, maar wel ook x van de z klappen goed gedaan.</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat als ik dingen wil resetten?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p> Als je je score wil resetten dan moet je even op je score klikken.</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat moet ik invullen bij file?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>Hier moet je een file met het bollenschema selecteren. Dit zijn gewoon de bollenschema's zoals we die hebben. Wel in .xlsx formaat want van .xls ging ik echt heel hard huilen, van .xlsx maar een beetje. Om dit om te zetten hoef je alleen maar in een moderne excel het .xls bestand te openen en via "opslaan als" kun je hem dan als .xlsx opslaan
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>En bij parts dan?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Lijkt me duidelijk: je hebt net een bollenschema geladen en toevallig staan alle namen van tabbladen ook bij parts: misschien is dat geen toeval... Dit zijn de dansen die je wil oefenen.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Colour dan?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Dat moet je even aan je trainer vragen als je het niet weet... Dit is de kleur die je danst. Op mobiel werkt dit niet super, daar moet je selecteren en dan pas zie je welke kleur je geselecteerd hebt, komt misschien een fix voor, misschien niet.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Maar wat moet ik dan invullen bij female?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Licht eraan hoe lang je op de werstrijddag bezig bent met je haar en make-up. Minder dan 10 minuten: ga even bij je teamcaptain langs, waarschijnlijk ben je een hoop vergeten. Minder dan een uur: niet aanvinken, meer dan een uur: wel aanvinken. Er zal bij veel vloeren geen verschil zijn, maar als er voor jouw kleur een apparte damespositie is (rode rand) dan moet je die aanklikken als dame.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat doet show colours?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Als je dit aanzet hebben de bolletjes een kleurtje. Of eigenlijk hebben ze altijd een kleur maar als je dit uitvinkt hebben alle bolletjes dezelfde kleur als jou eigen bolletje, anders de kleur zoals deze in het bollenschema staat.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat doet show yourself?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Vinkje om de beste danser op de vloer wel of niet te laten zien! Als je deze aanzet is het ook meteen een stuk beter te doen om foutloos te scoren, je verliest dan wel je bragging rights...
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Vertel me wat Show previous doet!</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Ho even... dat kun je ook netjes vragen! Eerst sorry zeggen... Nou vooruit dan. Als je dit aanvinkt zie je waar je vandaan komt (natuurlijk alleen als dit niet de eerste vloer is).
+					</p>
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Oh almachtige superman, zou u mij alstublieft willen vertellen wat Show previous colour doet?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Kijk zo hoor ik het graag! Daarmee kun je aan of uitzetten of je de kleuren kunt zien van de posities waar je vandaan komt.
+					</p>
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>En wat doet Show others</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Daarmee kun je aangeven of je te zien krijgt waar je teamgenoten staan.
+					</p>
+				</div>
+			</div>			
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat doet show colours (alleen te zien als je Show others aan hebt staan)?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Als je dit aanzet hebben de bolletjes een kleurtje. Of eigenlijk hebben ze altijd een kleur maar als je dit uitvinkt hebben alle bolletjes dezelfde kleur als jou eigen bolletje, anders de kleur zoals deze in het bollenschema staat.
+					</p>
+
+				</div>
+			</div>
+			<div class="accordion">
+				<div class="accordion__question">
+					<p>Wat doet Only show others in sight (alleen te zien als je Show others aan hebt staan)?</p>
+
+				</div>
+				<div class="accordion__answer">
+					<p>
+						Als je dit aanzet moet je voor je een vloer te zien krijgt eerst een hoek aangeven: de kant die je op kijkt. Je ziet dan alleen de posities van de teamgenoten die je op dat moment kan zien. Foutje gemaakt? Met de rechter muisknop of met 2 vingers klikken en dan kun je je kijkhoek opnieuw kiezen. 
+					</p>
+
+				</div>
+			</div>
+			<div>
+				<span id="close" onClick="helpOff()">
+					Close
+				</span>
+			</div>
+		</div>
+		<div id="upperRibbon">
+			<span id="setting" onClick="on()" class="button">
+					settings
+			</span>
+			<span id="toStart" class="button" onClick="firstFloor()">
+					|&lt;
+			</span>
+			<span id="PrevSheet" class="button" onClick="prevSheet()">
+					&lt;&lt;
+			</span>
+			<span id="PrevFloor" class="button" onClick="prevFloor()">
+					&lt;
+			</span>
+			<span id="nextFloor" class="button" onClick="nextFloor()">
+					&gt;
+			</span>
+			<span id="nextSheet" class="button" onClick="nextSheet()">
+					&gt;&gt;
+			</span>
+			<span id="toEnd" class="button" onClick="lastFloor()">
+					&gt;|
+			</span>
+			<span id="Current" class="button">
+					-
+			</span>
+			
+			<span id="Score" class="button" onClick="clearScore()">
+					correct: 0 errors:0 claps:0
+			</span>
+		</div>
+		<div>
+		
+		</div>
+		<div id="floor">
+			<canvas id="floorDraw" onmousemove = "updateMouse(event)" ontouchmove="updateFinger(event)" onmousedown="mouseDown(event)" ontouchstart="fingerDown(event)" onMouseUp = "clicked(event)" ontouchend = "clicked(event)"  onContextMenu = "return false;"> </canvas>	
+		</div>
+	</body>
+	<script src="JSzip.js"></script>
+	<script>
+
+	let zip;
+	let floorWidth = 8;
+	let floorHeight = 10;
+	let padding = 4;
+	
+	var dances = new Map();
+	var accents = new Map();
+	var colors = new Set();
+	var strings = [];
+	var styles = [];
+	let claps = [];
+	let errors = new Map();
+	let corrects = new Set();
+	
+	let currentClap ;
+	
+	
+	let muisX =-1;
+	let muisY =-1;
+	let usingFinger = false;
+	
+	let angleStart = 100;
+	let viewDir = [];
+	let getDir = false;
+
+  function handleFileSelect(evt) {
+	
+	var files = evt.target.files; // FileList object
+	parser = new DOMParser();
+	
+	
+	if(files[0].name.endsWith(".xlsx"))
+	{
+		dances = new Map();
+		accents = new Map();
+		colors = new Set();
+		styles = [];
+		strings = [];
+		var new_zip = new JSZip();
+		new_zip.loadAsync(files[0]).then(async function(z)
+		{
+			zip=z;
+				
+			stringsProm = zip.file("xl/sharedStrings.xml").async("string").then(val => {
+				xmlDoc = parser.parseFromString(val,"text/xml");
+				let  result = [];		
+				for (let s of xmlDoc.getElementsByTagName("si")) {
+					result.push(s.firstChild.firstChild.nodeValue);
+				};
+				return result;		
+			});
+			
+			accentsProm = zip.file("xl/theme/theme1.xml").async("string").then(val => {
+					xmlDoc = parser.parseFromString(val,"text/xml");
+					let result = new Map();
+					let i=1;						
+					while(xmlDoc.getElementsByTagName("a:accent"+i).length > 0) {
+						result.set("a:accent"+i,xmlDoc.getElementsByTagName("a:accent"+i)[0].firstChild.getAttribute("val"));
+						i++;
+					}
+					return result;
+					
+			});	
+			
+			stylesProm = zip.file("xl/styles.xml").async("string").then(val => {
+					xmlDoc = parser.parseFromString(val,"text/xml");
+					let result = [];
+					let borders=[];
+					for (let b of xmlDoc.getElementsByTagName("borders")[0].childNodes) {
+						if(b.getElementsByTagName("top")[0].getAttribute('style')==="medium" && b.getElementsByTagName("left")[0].getAttribute('style')==="medium"){
+							borders.push(1)
+						}else if(b.getElementsByTagName("top")[0].getAttribute('style')==="medium" && b.getElementsByTagName("right")[0].getAttribute('style')==="medium"){
+							borders.push(2)
+						}else if(b.getElementsByTagName("bottom")[0].getAttribute('style')==="medium" && b.getElementsByTagName("left")[0].getAttribute('style')==="medium"){
+							borders.push(3)
+						}else if(b.getElementsByTagName("bottom")[0].getAttribute('style')==="medium" && b.getElementsByTagName("right")[0].getAttribute('style')==="medium"){
+							borders.push(4)
+						}else if(b.getElementsByTagName("bottom")[0].getAttribute('style')==="medium" ){
+							borders.push(5)
+						}else{
+							borders.push(0)
+						}
+					};
+
+					for (let s of xmlDoc.getElementsByTagName("cellXfs")[0].childNodes) {
+						result.push(borders[s.getAttribute('borderId')])
+					}
+					return result;
+					
+			});	
+			
+			strings = await stringsProm;
+			accents = await accentsProm;
+			styles = await stylesProm;
+			
+			zip.file("xl/workbook.xml").async("string").then(val => {
+						xmlDoc = parser.parseFromString(val,"text/xml");
+						fillSheetSelector(xmlDoc.getElementsByTagName("sheets")[0].childNodes);
+					
+					});		
+		
+		});
+
+	}else{
+		console.log("dit is geen ondersteunde file");
+	}
+  }
+	  
+	function fillSheetSelector(sheets)
+	{
+		let div = document.getElementById('sheetSelectorDiv');
+		
+		clear(div);
+		newSelect = document.createElement("select");
+		newSelect.setAttribute('id','sheetSelector');
+		newSelect.setAttribute('multiple','');
+		newSelect.setAttribute('onChange','fillClaps()');
+		
+
+		sheets.forEach(function(sheet)
+		{
+			if(sheet.getAttribute('state')== null)
+			{
+				newOption = document.createElement("option");
+				newOption.setAttribute('value',sheet.getAttribute('r:id'));
+				newOption.setAttribute('selected','selected');
+				newOption.textContent = sheet.getAttribute('name');				
+				newSelect.appendChild(newOption);
+				
+				dances.set(sheet.getAttribute('r:id'), new Dance(sheet.getAttribute('r:id'),sheet.getAttribute('name')));
+			}	
+		})
+		
+		setSheets();
+
+		
+		div.appendChild(newSelect);
+		fillClaps();
+	}
+	
+	function updateColors(){
+		let options = document.getElementById('colors');
+		clear(options);
+		
+		for (let c of colors) {
+			newOption = document.createElement("option");
+			newOption.setAttribute('value',c);
+			newOption.setAttribute('id',"colPick"+c);
+			if(c.startsWith("0000")){
+				newOption.setAttribute('style',"width:100px;color:#FFFFFF;background-color:#"+c);
+			}else{
+				newOption.setAttribute('style',"width:100px;color:#000000;background-color:#"+c );
+			}
+			newOption.textContent = "                        ";
+			options.appendChild(newOption);
+		}
+		
+		newColor();
+		fillClaps();		
+	}
+	
+	function newColor(){
+		let options = document.getElementById('colors');
+		if(options.value.startsWith("0000")){
+			options.setAttribute('style',"color:#FFFFFF;background-color:#"+options.value);
+		}else{
+			options.setAttribute('style',"color:#000000;background-color:#"+options.value);
+		}
+		draw();
+	}
+	
+	function setSheets(){
+		zip.file("xl/_rels/workbook.xml.rels").async("string").then(val => {
+						xmlDoc = parser.parseFromString(val,"text/xml");
+						xmlDoc.getElementsByTagName("Relationships")[0].childNodes.forEach(function(rel){
+							let id = rel.getAttribute('Id');
+							if(dances.has(id)){
+								processSheet(id,rel.getAttribute('Target'));
+							}
+						});
+						
+						
+		});		
+	}
+	
+	function processSheet(id,file){
+	
+		zip.file("xl/" + file).async("string").then(val => {
+			xmlDoc = parser.parseFromString(val,"text/xml");
+			dances.get(id).fileName = file;
+			
+			
+			var centers = [];
+			var texts = []
+			let possible3 = [];
+			let last4or5;
+			let last2;
+			let defColWidth = xmlDoc.getElementsByTagName("sheetFormatPr")[0].getAttribute('defaultColWidth');
+			dances.get(id).defRowHeight = Number(xmlDoc.getElementsByTagName("sheetFormatPr")[0].getAttribute('defaultRowHeight'));
+			
+			
+			if(defColWidth != null){
+				MDW = find_mdw_colw(Number(defColWidth));
+				
+				dances.get(id).colWidths = {};
+				for(let c of  xmlDoc.getElementsByTagName("col")){
+					dances.get(id).colWidths[Number(c.getAttribute('max'))] = widthInEmu(Number(c.getAttribute('width')),MDW);
+				}
+			}
+			
+			dances.get(id).rowHeights = {};
+			for(let r of  xmlDoc.getElementsByTagName("row")){
+				if(Math.abs(r.getAttribute('ht')-dances.get(id).defRowHeight)>0.001 ){
+					dances.get(id).rowHeights[r.getAttribute('r')] = heightInEmu(Number(r.getAttribute('ht')));
+				}
+			}
+			dances.get(id).defRowHeight = heightInEmu(dances.get(id).defRowHeight);
+			
+			for(let c of  xmlDoc.getElementsByTagName("c")){
+				if(c.getAttribute('t')=="s"){
+					let p=new Point(c.getAttribute('r'));
+					texts.push(p);
+					p.text = strings[c.firstChild.firstChild.nodeValue]
+				}
+				if(styles[c.getAttribute('s')] === 2){
+					last2 = new Point(c.getAttribute('r'));
+				}else if(styles[c.getAttribute('s')] === 4 || styles[c.getAttribute('s')] === 5){
+					last4or5 = new Point(c.getAttribute('r'));
+				}else if(styles[c.getAttribute('s')] === 1){
+					let cen = new Point(c.getAttribute('r'));
+					if(last2 && last2.y === cen.y && last2.x === cen.x-1){
+						for(let p of possible3){
+							if(p.y === cen.y-1 && p.x === cen.x){
+								centers.push(new Floor(cen,dances.get(id).name));
+							}
+						}
+					}
+				}else if(styles[c.getAttribute('s')] === 3){
+					let cen = new Point(c.getAttribute('r'));
+					if(last4or5 && last4or5.y === cen.y && (last4or5.x === cen.x-1)){ 
+						possible3.push(cen);
+					}
+				}
+			}
+
+			dances.get(id).floors = centers;
+			
+			for(let t of texts){
+				dances.get(id).addTextToFloor(t);
+			}
+			
+			
+			rid = xmlDoc.getElementsByTagName("drawing")[0];
+			if(rid){
+			rid = rid.getAttribute('r:id');
+			}else{
+				return;
+			}
+			
+			zip.file("xl/" + file.replace("/","/_rels/") + ".rels").async("string").then(val => {
+				xmlDoc = parser.parseFromString(val,"text/xml");
+				xmlDoc.getElementsByTagName("Relationships")[0].childNodes.forEach(function(rel){
+					if(rid == rel.getAttribute('Id')){
+						dances.get(id).setDrawing(rel.getAttribute('Target'))
+					}
+				});
+			});
+			
+		});
+
+	}
+	  
+	function clear(e) {
+        
+        var child = e.lastElementChild; 
+        while (child) {
+            e.removeChild(child);
+            child = e.lastElementChild;
+        }
+    }
+
+	
+	
+
+	
+	class Dance {
+	   constructor(id,name) {this.id = id; this.name = name};
+	   
+	   setDrawing(tar){
+			this.drawing = tar;
+			zip.file("xl/" + tar.replace("../","")).async("string").then(val => {
+				xmlDoc = parser.parseFromString(val,"text/xml");
+				for (let dot of xmlDoc.getElementsByTagName("xdr:twoCellAnchor")){			
+					if(dot.getElementsByTagName("a:prstGeom") && dot.getElementsByTagName("a:prstGeom")[0].getAttribute('prst') == "ellipse"){
+						let from = dot.getElementsByTagName("xdr:from")[0];						
+						let point = new Point(from.getElementsByTagName("xdr:col")[0].firstChild.nodeValue,from.getElementsByTagName("xdr:row")[0].firstChild.nodeValue);
+						for (let r in this.colWidths){
+							if(point.x <  r){
+								point.offsetX = (Number(dot.getElementsByTagName("xdr:from")[0].getElementsByTagName("xdr:colOff")[0].firstChild.nodeValue) + Number(dot.getElementsByTagName("a:xfrm")[0].getElementsByTagName("a:ext")[0].getAttribute('cx')/2))/(this.colWidths[r]*2);
+								break;
+							}
+						}
+						
+						if(this.rowHeights[point.y+1] != null){
+							point.offsetY = ((Number(dot.getElementsByTagName("xdr:from")[0].getElementsByTagName("xdr:rowOff")[0].firstChild.nodeValue) + Number(dot.getElementsByTagName("a:xfrm")[0].getElementsByTagName("a:ext")[0].getAttribute('cy')/2))/(this.rowHeights[point.y+1]*2));
+						}else{
+							point.offsetY =((Number(dot.getElementsByTagName("xdr:from")[0].getElementsByTagName("xdr:rowOff")[0].firstChild.nodeValue) + Number(dot.getElementsByTagName("a:xfrm")[0].getElementsByTagName("a:ext")[0].getAttribute('cy')/2))/(this.defRowHeight*2));
+						}
+						
+						if(dot.getElementsByTagName("a:fillRef")[0]){	
+							point.c = accents.get("a:"+dot.getElementsByTagName("a:fillRef")[0].firstChild.getAttribute('val'));						
+							
+						}if(dot.getElementsByTagName("a:solidFill")[0]){				
+							point.c = dot.getElementsByTagName("a:solidFill")[0].firstChild.getAttribute('val');
+						}
+						if(dot.getElementsByTagName("a:lnRef")[0]){	
+							point.female =accents.get("a:"+dot.getElementsByTagName("a:lnRef")[0].getElementsByTagName("a:schemeClr")[0].getAttribute('val'))=== "FF0000";						
+							
+						}if(dot.getElementsByTagName("a:ln")[0]){				
+							point.female= dot.getElementsByTagName("a:ln")[0].getElementsByTagName("a:srgbClr")[0].getAttribute('val') ==="FF0000";
+						}
+						if(point.c){
+							if(point.c == "0033CC"){//ugly fix for wrong color of 1 dot in Moulin Rouge
+								point.c = '0000FF'
+							}
+							this.addPointToFloor(point);
+							colors.add(point.c);
+						}
+					}
+				}
+				updateColors();
+
+			});
+	   }
+	   
+	   addPointToFloor(p){
+			for(let f of this.floors){
+				if(Math.abs(f.cen.x - p.x) < floorWidth*2 + 1.5 && Math.abs(f.cen.y - p.y) < floorHeight*2 + 1.5){
+					if(f.points == undefined){
+						f.points = [];
+					}
+					p.x -= f.cen.x;
+					p.x/=2;
+					p.y -= f.cen.y;		
+					p.y/=2;					
+					f.points.push(p);
+					return;
+				}
+			}
+	   }
+	   
+	   addTextToFloor(p){
+			for(let f of this.floors){
+				if(Math.abs(f.cen.x - p.x) < floorWidth*2 + 1 && Math.abs(f.cen.y - p.y) < floorHeight*2 + 1){
+					if(f.texts == undefined){
+						f.texts = [];
+					}	
+					p.x -= f.cen.x;
+					p.x/=2;
+					p.y -= f.cen.y;		
+					p.y/=2;					
+					f.texts.push(p);
+					return;
+				}
+			}
+	   }
+	   
+	   
+	}
+	
+	
+	class Point {
+		
+	    constructor(name,y) {
+			if (y === undefined) {
+				let letters = name.replace(/\d+/g, '');
+				this.x=0;
+				for(let i=0;i<letters.length;i++){
+					this.x*=26;
+					this.x+=letters.charCodeAt(i)-'A'.charCodeAt(0)+1;
+				}
+				this.x-=1;
+				this.y = Number(name.replace(/\D/g, ''));
+				this.y-=1;
+			}else{			
+				this.x=Number(name);
+				this.y=Number(y);
+			}
+			this.offsetX=0;
+			this.offsetY=0;
+		
+		}
+		
+		drawPosition(){
+			return translate(this.x+this.offsetX,this.y+this.offsetY);
+		}
+		
+		coordinate(){
+			return {x:this.x+this.offsetX,y:this.y+this.offsetY};
+		}
+		
+		distance(p){
+			return Math.sqrt((p.x-this.x)*(p.x-this.x)+(p.y-this.y)*(p.y-this.y));
+		}
+	  	   
+	}
+	
+	class Floor {
+	    constructor(cen, name) {
+			this.cen = cen;
+			this.name = name
+	    };
+	  	   
+	}
+	
+
+	
+	function diffrentSize(){
+		draw();
+	}
+	
+	function draw()
+	{
+
+		let v = document.getElementById("floor");
+		let c = document.getElementById("floorDraw");
+		
+		if( v.clientWidth > v.clientHeight * 0.8){
+			c.style.width = (v.clientHeight * 0.8 + padding) + "px";
+			c.style.height = (v.clientHeight + padding) + "px";
+		}else{
+			c.style.width = (v.clientWidth + padding) + "px";
+			c.style.height = (v.clientWidth * 1.25 + padding) + "px";
+		}
+		
+		let ctx = c.getContext("2d");
+		ctx.canvas.setAttribute('width', c.clientWidth);
+		ctx.canvas.setAttribute('height', c.clientHeight);
+		ctx.lineWidth = 1;
+		
+		
+		if(viewDir.length > 0 || !document.getElementById('showOthersDir').checked){
+		//Grid tekenen
+					
+			ctx.beginPath();
+			for(let i=0.5 - floorWidth;i<floorWidth;i+=1)
+			{
+				ctx.moveTo(translate(i,padding/2).x, padding/2);
+				ctx.lineTo(translate(i,padding/2).x, c.clientHeight-padding/2);
+				//ctx.moveTo(0, transleer(i));
+				//ctx.lineTo(c.clientWidth, transleer(i));
+
+			}
+			
+			for(let i= 0.5 - floorHeight;i<floorHeight;i+=1)
+			{
+				ctx.moveTo(padding/2,translate(padding/2,i).y);
+				ctx.lineTo(c.clientWidth-padding/2 , translate(padding/2,i).y);
+				//ctx.moveTo(0, transleer(i));
+				//ctx.lineTo(c.clientWidth, transleer(i));
+
+			}
+			
+			ctx.strokeStyle	 = '#bcbcbc';
+			ctx.stroke();
+			
+			ctx.beginPath();
+			for(let i=-floorWidth;i<=floorWidth;i+=1)
+			{
+				ctx.moveTo(translate(i,padding/2).x, padding/2);
+				ctx.lineTo(translate(i,padding/2).x, c.clientHeight-padding/2);
+				//ctx.moveTo(0, transleer(i));
+				//ctx.lineTo(c.clientWidth, transleer(i));
+			}
+			
+			for(let i=-floorHeight;i<=floorHeight;i+=1)
+			{
+				ctx.moveTo(padding/2,translate(padding/2,i).y);
+				ctx.lineTo(c.clientWidth-padding/2 , translate(padding/2,i).y);
+				//ctx.moveTo(0, transleer(i));
+				//ctx.lineTo(c.clientWidth, transleer(i));
+
+			}
+			
+			ctx.strokeStyle	 = '#000000';
+			ctx.stroke();
+			
+			ctx.beginPath();
+			ctx.lineWidth = 2;
+			for(let i=-floorWidth;i<=floorWidth;i+=floorWidth)
+			{
+				ctx.moveTo(translate(i,padding/2).x, padding/2);
+				ctx.lineTo(translate(i,padding/2).x, c.clientHeight-padding/2);
+				//ctx.moveTo(0, transleer(i));
+				//ctx.lineTo(c.clientWidth, transleer(i));
+			}
+			
+			for(let i=-floorHeight;i<=floorHeight;i+=floorHeight)
+			{
+				ctx.moveTo(padding/2,translate(padding/2,i).y);
+				ctx.lineTo(c.clientWidth-padding/2 , translate(padding/2,i).y);
+				//ctx.moveTo(0, transleer(i));
+				//ctx.lineTo(c.clientWidth, transleer(i));
+
+			}
+			
+			ctx.strokeStyle	 = '#000000';
+			ctx.stroke();
+			
+			ctx.strokeStyle	 = '#FF0000';
+			if( errors.get(claps[currentClap]) != undefined){
+				for(let pnt of errors.get(claps[currentClap])){
+
+					let size = Math.floor(c.clientHeight/(8*floorHeight))
+
+					let p = pnt.drawPosition()
+					ctx.beginPath();
+					ctx.moveTo(p.x-size,p.y-size);
+					ctx.lineTo(p.x+size,p.y+size);
+					ctx.moveTo(p.x+size,p.y-size);
+					ctx.lineTo(p.x-size,p.y+size);
+					
+
+					ctx.stroke();
+				}
+			}
+			
+
+			
+			
+			if(claps.length > currentClap){
+				document.getElementById('Current').textContent = claps[currentClap].name
+				
+				if(currentClap>0 && document.getElementById('showPrev').checked){
+					ctx.lineWidth = 1;
+					for(let pnt of claps[currentClap-1].points){
+						ctx.beginPath();
+						let p = pnt.drawPosition()
+						ctx.arc(p.x, p.y, 3, 0, 2 * Math.PI);
+						
+						
+						if(!document.getElementById('showPrevCol').checked){
+							ctx.fillStyle = '#bcbcbc';
+						}else{	
+							ctx.fillStyle = '#'+pnt.c;
+						}
+						
+						if(pnt.female){
+							ctx.strokeStyle	 = '#FF0000';
+						}else{
+							ctx.strokeStyle	 = '#000000';
+						}
+						ctx.fill();
+						ctx.stroke();
+					}
+				}
+				let e=0;
+				for(let [key,err] of errors){
+					e+=err.length;
+				}
+				
+				document.getElementById('Score').textContent = "correct: "+corrects.size+" errors: "+e+" claps: "+ claps.length;
+				
+				ctx.lineWidth = 2;
+				
+				let i=0;
+				for(let pnt of claps[currentClap].points){
+					if(document.getElementById('colors').value == pnt.c){
+						i++;
+					}
+				}
+				let self=null;
+				for(let pnt of claps[currentClap].points){										
+					if(document.getElementById('colors').value == pnt.c &&( i==1 || ((document.getElementById('isFemale').checked && pnt.female) || (!document.getElementById('isFemale').checked && !pnt.female))))
+					{
+						self = pnt;
+					}															
+				}
+
+				for(let pnt of claps[currentClap].points){
+					let guessed=false;
+					if(self == pnt){
+						if(corrects.has(currentClap)){
+							guessed= true ;
+						}
+						if(!document.getElementById('showSelf').checked && !guessed){
+								continue;
+						}
+						
+					}else{
+						if(!document.getElementById('showOthers').checked ){
+								continue;
+						}else if(document.getElementById('showOthersDir').checked){
+							let p = pnt.coordinate();
+							let s = self.coordinate();
+							
+							let pointAngle = (Math.atan2(p.x-s.x, p.y-s.y)+ 1.5* Math.PI) % (2* Math.PI);
+							//console.log(pnt.drawPosition().x + " "+ p.y + " " + pointAngle);
+							ctx.fillStyle	 = '#000000';
+							if((viewDir[0] < viewDir[1] && (pointAngle < viewDir[0] || pointAngle > viewDir[1])) || (viewDir[1] < viewDir[0] && (pointAngle > viewDir[1] && pointAngle < viewDir[0])))
+							{
+								continue;
+							}
+						}
+					}
+				
+					ctx.beginPath();
+					let p = pnt.drawPosition();
+					ctx.arc(p.x, p.y, 6, 0, 2 * Math.PI);
+					
+					if(document.getElementById('showCol').checked){
+						ctx.fillStyle = '#'+pnt.c;
+					}else{
+						ctx.fillStyle = '#'+document.getElementById('colors').value;
+					}
+					
+					if(guessed){
+						ctx.strokeStyle	 = '#00FF00';
+					}else if(pnt.female){
+						ctx.strokeStyle	 = '#FF0000';
+					}else{
+						ctx.strokeStyle	 = '#000000';
+					}
+					ctx.fill();
+					ctx.stroke();
+				}
+				
+				ctx.fillStyle	 = '#000000';
+				
+				ctx.textBaseline = 'top';
+
+				if(claps[currentClap].texts != undefined){
+					ctx.font = ctx.font.replace(/\d+px/, Math.floor(c.clientHeight/(4*floorHeight))+"px");
+					for(let pnt of claps[currentClap].texts){
+						let p = pnt.drawPosition()
+						ctx.fillStyle	 = '#FFFFFF';
+						ctx.fillRect(p.x, p.y, ctx.measureText(pnt.text).width, parseInt(ctx.font, 10));
+						ctx.fillStyle	 = '#000000';
+						ctx.fillText(pnt.text,p.x,p.y);
+					}
+
+				}
+				
+
+				ctx.font = ctx.font.replace(/\d+px/, Math.floor(c.clientHeight/(4*floorHeight))+"px");
+				ctx.textBaseline = 'bottom';
+				ctx.beginPath();
+				gridX = Math.round((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth;
+				gridY = Math.round((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight;
+
+				if(usingFinger){
+					p = {x:0, y:parseInt(ctx.font, 10)};
+					ctx.fillStyle	 = '#FFFFFF';
+					ctx.fillRect(p.x, p.y-parseInt(ctx.font, 10), ctx.measureText(gridX+","+gridY).width, parseInt(ctx.font, 10));
+					ctx.fillStyle	 = '#000000';
+					ctx.fillText(gridX+","+gridY,p.x,p.y);
+					
+					p = {x:0, y:c.clientHeight};
+					ctx.fillStyle	 = '#FFFFFF';
+					ctx.fillRect(p.x, p.y-parseInt(ctx.font, 10), ctx.measureText(gridX+","+gridY).width, parseInt(ctx.font, 10));
+					ctx.fillStyle	 = '#000000';
+					ctx.fillText(gridX+","+gridY,p.x,p.y);
+					
+					p = {x:c.clientWidth - ctx.measureText(gridX+","+gridY).width, y:parseInt(ctx.font, 10)};
+					ctx.fillStyle	 = '#FFFFFF';
+					ctx.fillRect(p.x, p.y-parseInt(ctx.font, 10), ctx.measureText(gridX+","+gridY).width, parseInt(ctx.font, 10));
+					ctx.fillStyle	 = '#000000';
+					ctx.fillText(gridX+","+gridY,p.x,p.y);
+					
+					p = {x:c.clientWidth - ctx.measureText(gridX+","+gridY).width, y:c.clientHeight};
+					ctx.fillStyle	 = '#FFFFFF';
+					ctx.fillRect(p.x, p.y-parseInt(ctx.font, 10), ctx.measureText(gridX+","+gridY).width, parseInt(ctx.font, 10));
+					ctx.fillStyle	 = '#000000';
+					ctx.fillText(gridX+","+gridY,p.x,p.y);
+				}else{
+					let p = translate(gridX,gridY)
+					ctx.arc(p.x, p.y, 2, 0, 2 * Math.PI);
+					ctx.strokeStyle	 = '#bcbcbc';
+					ctx.stroke();
+					ctx.fillStyle	 = '#FFFFFF';
+					ctx.fillRect(p.x, p.y-parseInt(ctx.font, 10), ctx.measureText(gridX+","+gridY).width, parseInt(ctx.font, 10));
+					ctx.fillStyle	 = '#000000';
+					ctx.fillText(gridX+","+gridY,p.x,p.y);
+				}
+			}		
+		}else{
+			centerX = c.clientWidth/2;
+			centerY = c.clientHeight/2;
+			angleEnd = (2* Math.PI) - ((Math.atan2(((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight, ((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth)+ 2* Math.PI) % (2* Math.PI));
+			
+			if(claps.length > currentClap){
+				document.getElementById('Current').textContent = claps[currentClap].name
+				ctx.textBaseline = 'top';
+				if(claps[currentClap].texts != undefined){
+					ctx.font = ctx.font.replace(/\d+px/, Math.floor(c.clientHeight/(4*floorHeight))+"px");
+					for(let pnt of claps[currentClap].texts){
+						let p = pnt.drawPosition()
+						ctx.fillStyle	 = '#FFFFFF';
+						ctx.fillRect(p.x, p.y, ctx.measureText(pnt.text).width, parseInt(ctx.font, 10));
+						ctx.fillStyle	 = '#000000';
+						ctx.fillText(pnt.text,p.x,p.y);
+					}
+
+				}
+			}
+			
+			if(angleStart < 50 ){
+				ctx.beginPath();
+				ctx.moveTo(centerX , centerY);
+				ctx.arc(centerX, centerY, c.clientWidth*0.45, 2*Math.PI -angleEnd, 2*Math.PI -angleStart, (angleStart+ 2*Math.PI - angleEnd)% (2*Math.PI) <Math.PI);
+				ctx.closePath();
+				ctx.fillStyle = '#'+document.getElementById('colors').value;
+				ctx.fill();
+				
+				ctx.beginPath();
+				ctx.moveTo(centerX , centerY);
+				ctx.arc(centerX, centerY, c.clientWidth/8, 0 , 2*Math.PI);
+				ctx.closePath();
+				ctx.fillStyle = '#FF0000';
+				ctx.fill();
+				ctx.beginPath();
+				ctx.arc(centerX, centerY, c.clientWidth/8, 0 , 2*Math.PI);
+				ctx.strokeStyle = '#000000';
+				ctx.stroke();
+				ctx.font = ctx.font.replace(/\d+px/, Math.floor(c.clientHeight/(2*floorHeight))+"px");
+				ctx.textBaseline = 'middle';
+				ctx.textAlign = "center";
+				ctx.fillStyle = '#000000';
+				ctx.fillText("cancel",centerX , centerY);
+			}else{
+				ctx.beginPath();
+				ctx.moveTo(centerX , centerY);
+				gridX = ((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth;
+				gridY = ((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight;
+				let p = translate(gridX,gridY)
+				ctx.lineTo(p.x,p.y)
+				ctx.strokeStyle = '#000000';
+				ctx.stroke();
+			}
+		}
+
+	}
+	
+	function translate(x,y) {
+		var res = new Object();
+
+		res.x = (document.getElementById("floorDraw").clientWidth - padding ) * (x+floorWidth) / (floorWidth*2);
+		res.y = (document.getElementById("floorDraw").clientHeight - padding ) * (y+floorHeight) / (floorHeight*2);
+		res.x+= padding/2;
+		res.y+= padding/2;
+		return res;
+	}
+	
+	function updateMouse(e) {
+		muisX = e.clientX;
+		muisY = e.clientY;
+		draw();
+	}
+	
+	function updateFinger(e) {
+	usingFinger = true;
+		muisX = e.touches[0].clientX;
+		muisY = e.touches[0].clientY;
+		if((e.touches && e.touches.length == 2))
+		{
+			angleStart = 100;
+			viewDir = [];
+		}
+		draw();
+	}
+	
+	function fingerDown(e){
+		updateFinger(e);
+		let c = document.getElementById("floorDraw");
+		angleStart = (2* Math.PI) - ((Math.atan2(((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight, ((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth)+ 2* Math.PI) % (2* Math.PI));
+	}
+	
+	
+	
+	function mouseDown(){
+		let c = document.getElementById("floorDraw");
+		angleStart = (2* Math.PI) - ((Math.atan2(((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight, ((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth)+ 2* Math.PI) % (2* Math.PI));
+	}
+	
+	function clicked(e){
+	// Niet onmouseup en touchend samen doen
+		e.preventDefault();
+		if(e.button == 2 )
+		{
+			angleStart = 100;
+			viewDir = [];
+			draw();
+			return;
+		}
+		if(viewDir.length > 0 || !document.getElementById('showOthersDir').checked){
+			if(claps.length == 0){
+				return;
+			}
+			let c = document.getElementById("floorDraw");
+			gridX = ((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth;
+			gridY = ((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight;
+			
+			for(let pnt of claps[currentClap].points){
+				if(Math.abs(pnt.x+pnt.offsetX -gridX)<=0.25 && Math.abs(pnt.y+pnt.offsetY -gridY)<=0.25 && document.getElementById('colors').value == pnt.c){
+					corrects.add(currentClap);
+					nextFloor();
+
+					return;
+				}
+			}
+			
+			gridX = Math.round(gridX*2)/2;
+			gridY = Math.round(gridY*2)/2;	
+			
+			if(!errors.has(claps[currentClap])){
+				errors.set(claps[currentClap],[]);
+			}
+			for(let pnt of errors.get(claps[currentClap])){
+				if(pnt.x == gridX && pnt.y == gridY){
+					draw();
+					return;
+				}
+			}
+			errors.get(claps[currentClap]).push(new Point(gridX, gridY));
+			
+			
+		}else{
+			let c = document.getElementById("floorDraw");
+			centerX = c.clientWidth/2;
+			centerY = c.clientHeight/2;
+			if(angleStart != 100 &&( Math.abs((muisX - c.offsetLeft)-centerX)> c.clientWidth/8 || Math.abs((muisY - c.offsetTop)-centerY)> c.clientWidth/8)){
+				angleEnd = (2* Math.PI) - ((Math.atan2(((muisY - c.offsetTop) / c.clientHeight * floorHeight*4)/2-floorHeight, ((muisX - c.offsetLeft) / c.clientWidth * floorWidth*4)/2-floorWidth)+ 2* Math.PI) % (2* Math.PI));
+				if((angleEnd+ 2*Math.PI - angleStart)% (2*Math.PI) <Math.PI){
+					viewDir[0] = angleStart;
+					viewDir[1] = angleEnd;
+				}else{
+					viewDir[1] = angleStart;
+					viewDir[0] = angleEnd;
+
+				}
+				angleStart = 100;
+			}else{
+				angleStart = 100;
+			}
+			
+		}
+		draw();
+		
+	}
+	
+	function fillClaps(){
+		let selected = document.getElementById("sheetSelector").selectedOptions;
+		currentClap = 0;
+		claps = [];
+
+		for(let sel of selected){
+			let d = dances.get(sel.value);
+			if(d.floors){
+				for(let f of d.floors){
+					if(f.points){
+						claps.push(f);
+						if(claps.length>1 && nonMoving(claps.length-1)){
+							claps.pop();
+							claps.pop();
+							claps.push(f);
+						}
+						
+					}
+				}
+			}
+		}
+		
+		updateDistances();
+
+		draw();
+	}
+	
+	function updateDistances(){
+		
+		for(let c of colors){
+			let maleDist=0;
+			let femaleDist=0;
+			for(let i=1;i<claps.length;i++){
+				maleDist += colorDistanceFromPrev(i,c, false);
+				femaleDist += colorDistanceFromPrev(i,c, true);
+
+			}
+			document.getElementById('colPick'+c).textContent = "Dame: " + femaleDist.toFixed(2) +"m Heer: "+maleDist.toFixed(2) + "m";
+		}
+		
+	}
+	
+	function nonMoving(i){
+		let dist=0;
+		for(let p of claps[i].points){
+			dist += colorDistanceFromPrev(i,p.c,true);
+			dist += colorDistanceFromPrev(i,p.c,false);
+		}
+		return dist==0;
+	}
+	
+	function colorDistanceFromPrev(i,col, female){
+		let old;
+		for(let p of claps[i-1].points){
+			if(p.c === col){
+				old=p;
+				if(female && p.female){
+					break;
+				}else if(!female){
+					break;
+				}
+				
+			}
+		}
+		if(old == undefined){
+			return 0;
+		}
+		let ans=0;
+		for(let p of claps[i].points){
+			if(p.c === col){
+				ans =  old.distance(p);
+				if(female && p.female){
+					break;
+				}else if(!female){
+					break;
+				}
+			}
+		}
+		return ans;
+	}
+	
+	function on() {
+	  document.getElementById("overlay").style.display = "block";
+	}
+	
+	function off() {
+	  document.getElementById("overlay").style.display = "none";
+	  
+	  setCookie("showCol", document.getElementById('showCol').checked, 365);
+	  setCookie("showSelf", document.getElementById('showSelf').checked, 365);
+	  setCookie("isFemale", document.getElementById('isFemale').checked, 365);
+	  setCookie("showPrev", document.getElementById('showPrev').checked, 365);
+	  setCookie("showPrevCol", document.getElementById('showPrevCol').checked, 365);			
+	  setCookie("showOthers", document.getElementById('showOthers').checked, 365);			
+	  setCookie("showOthersDir", document.getElementById('showOthersDir').checked, 365);			
+	  
+	}
+	
+	function helpOn() {
+	  document.getElementById("overlayHelp").style.display = "block";
+	}
+	
+	function helpOff() {
+	  document.getElementById("overlayHelp").style.display = "none";			
+	  
+	}
+
+	function nextFloor() {
+	  if(currentClap < claps.length-1){
+		currentClap += 1;
+	  }
+	  viewDir = [];
+	  angleStart = 100;
+	  console.log("ja");
+	  draw();
+	}
+	
+	function prevFloor() {
+	  if(currentClap >0){
+		currentClap -= 1;
+	  }
+	  viewDir = [];
+	  draw();
+	}
+	
+	function firstFloor() {
+		currentClap=0;
+		viewDir = [];
+		draw();
+	}
+	
+	function lastFloor() {
+		currentClap=claps.length - 1;
+		viewDir = [];
+		draw();
+	}
+	
+	function nextSheet() {
+	   if(currentClap < claps.length-1){
+			currentClap += 1;
+	  }
+	  while(currentClap < claps.length-1 && (currentClap == 0 || claps[currentClap-1].name == claps[currentClap].name)){
+		currentClap += 1;
+	  }
+	  viewDir = [];
+	  draw();
+	}
+	
+	function prevSheet() {
+	  if(currentClap >0){
+		currentClap -= 1;
+	  }
+	  while(currentClap > 0 && claps[currentClap-1].name == claps[currentClap].name){
+		currentClap -= 1;
+	  }
+	  viewDir = [];
+	  draw();
+	}
+	
+	function togleShowPrevCol(){
+		if (document.getElementById("showPrev").checked) {
+			document.getElementById("showPrevCol").style = "";
+			document.getElementById("showPrevColLabel").style = "";
+		} else {
+			document.getElementById("showPrevCol").style.display = "none";
+			document.getElementById("showPrevColLabel").style.display = "none";
+		}
+	}
+	
+	function togleShowOthersDirCol(){
+		viewDir = [];
+		if (document.getElementById("showOthers").checked) {
+			document.getElementById("showOthersDir").style = "";
+			document.getElementById("showOthersDirLabel").style = "";
+			document.getElementById("showCol").style = "";
+			document.getElementById("showColLabel").style = "";
+		} else {
+			document.getElementById("showOthersDir").style.display = "none";
+			document.getElementById("showOthersDirLabel").style.display = "none";
+			document.getElementById("showOthersDir").checked = false;
+			document.getElementById("showCol").style.display = "none";
+			document.getElementById("showColLabel").style.display = "none";
+			document.getElementById("showCol").checked = false;
+		}
+		draw();
+	}
+	
+	function clearScore() {
+	  corrects = new Set();
+	  errors = new Map();
+	  draw();
+	}
+
+
+	
+	function find_mdw_colw(collw) {
+//collw = 2.140625;	
+return 7;
+// hoop ingewikkelde code om de MDW te berekenen, maar hier kwam soms 13 uit terwijl dat het altijd 7 moest zijn (proefondervindelijk vastgesteld) en voor de vorm dus: might look into later
+		DEF_MDW = 6, MAX_MDW = 15, MIN_MDW = 1, MDW = DEF_MDW;	
+		delta = Math.abs(collw - cycle_width(collw,MDW)), _MDW = MDW;
+
+		if(delta > 0.005) {
+			for(MDW=MIN_MDW; MDW<MAX_MDW; ++MDW){
+				if(Math.abs(collw - cycle_width(collw)) <= delta) 
+				{ 
+					delta = Math.abs(collw - cycle_width(collw)); 
+					_MDW = MDW; 
+				}
+			}
+		}
+		MDW = _MDW;
+		return MDW;
+	}
+	function cycle_width(collw) { return char2width(px2char(width2px(collw))); }
+	function char2width(chr) { return (Math.round((chr * MDW + 5.0)/MDW*256.0))/256.0; }
+	function px2char(px) { return (Math.floor((px - 5.0)/MDW * 100.0 + 0.5))/100.0; }
+
+	
+
+	function width2px(width) { return Math.floor(( width + (Math.round(128.0/MDW))/256.0 )* MDW ); }
+	function widthInEmu(width){;return width2px(width)*9525.0	}
+	function heightInEmu(height){return height*(4.0/3.0)*9525.0	}
+	
+	function setCookie(cname, cvalue, exdays) {
+	  const d = new Date();
+	  d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+	  let expires = "expires="+d.toUTCString();
+	  document.cookie = cname + "=" + cvalue + ";" + expires + ";SameSite=None;Secure;path=/";
+	}
+
+	function getCookie(cname) {
+	  let name = cname + "=";
+	  let ca = document.cookie.split(';');
+	  for(let i = 0; i < ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') {
+		  c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+		  return c.substring(name.length, c.length);
+		}
+	  }
+	  return "";
+	}
+	
+	
+	
+	window.addEventListener('resize', diffrentSize);
+	document.getElementById('upload').addEventListener('change', handleFileSelect, false);
+	
+	document.getElementById('showCol').checked = getCookie("showCol") === 'true';
+	document.getElementById('showSelf').checked = getCookie("showSelf") === 'true';
+	document.getElementById('isFemale').checked = getCookie("isFemale") === 'true';
+	document.getElementById('showPrev').checked = getCookie("showPrev") === 'true';
+	document.getElementById('showPrevCol').checked = getCookie("showPrevCol") === 'true';
+	document.getElementById('showOthers').checked = getCookie("showOthers") === 'true';
+	document.getElementById('showOthersDir').checked = getCookie("showOthersDir") === 'true';
+	
+	togleShowPrevCol();
+	togleShowOthersDirCol();
+
+	let answers=document.querySelectorAll(".accordion");
+        answers.forEach((event)=>{
+            event.addEventListener('click',()=>{
+                if(event.classList.contains("active")){
+                    event.classList.remove("active");
+                }
+                else{
+                    event.classList.add("active");
+                }
+            })
+        })
+	</script>
+</html> 
